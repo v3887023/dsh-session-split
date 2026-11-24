@@ -1,0 +1,5 @@
+- insert:
+    # One Loader row: the package's Host half is a no-op, and its browser half
+    # mounts the split workbench into the sidebar panel list and the main area.
+    - id: session-split
+      name: '@local/dsh-session-split'

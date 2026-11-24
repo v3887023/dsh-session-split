@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Session split view">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1b2233"/>
+      <stop offset="1" stop-color="#10141f"/>
+    </linearGradient>
+    <linearGradient id="accent" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5b7cff"/>
+      <stop offset="1" stop-color="#3f5ae0"/>
+    </linearGradient>
+  </defs>
+  <rect x="3" y="3" width="58" height="58" rx="14" fill="url(#bg)"/>
+  <rect x="3.75" y="3.75" width="56.5" height="56.5" rx="13.25" fill="none" stroke="#39415a" stroke-width="1.5"/>
+  <rect x="11" y="11" width="19" height="19" rx="5" fill="url(#accent)"/>
+  <rect x="34" y="11" width="19" height="19" rx="5" fill="#2c3652"/>
+  <rect x="11" y="34" width="19" height="19" rx="5" fill="#2c3652"/>
+  <rect x="34" y="34" width="19" height="19" rx="5" fill="#3a4568"/>
+  <rect x="15.5" y="16" width="10" height="2" rx="1" fill="#dbe3ff" opacity="0.95"/>
+  <rect x="15.5" y="21" width="6.5" height="2" rx="1" fill="#dbe3ff" opacity="0.6"/>
+  <circle cx="43.5" cy="20.5" r="2.6" fill="#8ea2c8" opacity="0.55"/>
+  <rect x="38.5" y="40" width="10" height="2" rx="1" fill="#c7d2f5" opacity="0.7"/>
+  <rect x="38.5" y="45" width="6.5" height="2" rx="1" fill="#c7d2f5" opacity="0.4"/>
+</svg>

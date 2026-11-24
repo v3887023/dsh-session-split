@@ -1,0 +1,7 @@
+{
+  "meta": {
+    "title": "Session split view",
+    "description": "Turns the main area into a workbench of up to six Sessions, each rendering the shipped Conversation body against its own Session. Automatic grid with a manual column override; drag a pane title to reorder.",
+    "detail": "docs/DETAIL.md"
+  }
+}

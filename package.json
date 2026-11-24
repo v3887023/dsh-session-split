@@ -1,0 +1,40 @@
+{
+  "name": "@v3887023/dsh-session-split",
+  "version": "1.2.3",
+  "private": true,
+  "type": "module",
+  "description": "Split the main area into a workbench of live Session panes: drag a Session out of the sidebar and watch or drive several conversations side by side.",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "docs",
+    "icon.svg",
+    "README.md"
+  ],
+  "scripts": {
+    "test": "node test/transcript.test.mjs && node test/registration.test.mjs && node test/render.test.mjs"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/v3887023/dsh-session-split.git"
+  },
+  "homepage": "https://github.com/v3887023/dsh-session-split",
+  "license": "UNLICENSED"
+}
