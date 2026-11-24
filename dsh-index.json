@@ -1,0 +1,36 @@
+{
+  "format": 1,
+  "title": {
+    "en": "Session Split",
+    "zh": "会话分屏"
+  },
+  "description": {
+    "en": "Private DSH plugin index",
+    "zh": "私有 DSH 插件索引"
+  },
+  "plugins": [
+    {
+      "name": "@v3887023/dsh-session-split",
+      "title": {
+        "en": "Session Split",
+        "zh": "会话分屏"
+      },
+      "description": {
+        "en": "Split the main area into side-by-side live Session panes.",
+        "zh": "把主区域分成并排的多个实时会话窗格。"
+      },
+      "author": "v3887023",
+      "homepage": "https://github.com/v3887023/dsh-session-split",
+      "versions": [
+        {
+          "version": "1.2.4",
+          "source": {
+            "type": "git",
+            "url": "https://github.com/v3887023/dsh-session-split",
+            "commit": "6c796e56b66092609efa0a9dc739857a5a3e20ec"
+          }
+        }
+      ]
+    }
+  ]
+}
