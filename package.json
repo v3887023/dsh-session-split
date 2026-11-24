@@ -1,6 +1,6 @@
 {
   "name": "@v3887023/dsh-session-split",
-  "version": "1.2.4",
+  "version": "1.3.6",
   "private": true,
   "type": "module",
   "description": "Split the main area into a workbench of live Session panes: drag a Session out of the sidebar and watch or drive several conversations side by side.",

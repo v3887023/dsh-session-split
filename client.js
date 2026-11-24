@@ -846,14 +846,29 @@ window.__ModuleLoader__.load({
     /** One run of the "already open" hint on one pane. */
     let flashTimer = null
     function flashPane(sessionId) {
-      paneStore.flash = sessionId
-      notifyPanes()
       if (flashTimer !== null) window.clearTimeout(flashTimer)
-      flashTimer = window.setTimeout(() => {
-        flashTimer = null
+      const scheduleClear = () => {
+        flashTimer = window.setTimeout(() => {
+          flashTimer = null
+          paneStore.flash = null
+          notifyPanes()
+        }, 1600)
+      }
+      // Clicking the same pane again must replay the cue: clear it, then set it
+      // on the next frame so the CSS animation restarts.
+      if (paneStore.flash === sessionId) {
         paneStore.flash = null
         notifyPanes()
-      }, 1600)
+        window.requestAnimationFrame(() => {
+          paneStore.flash = sessionId
+          notifyPanes()
+          scheduleClear()
+        })
+        return
+      }
+      paneStore.flash = sessionId
+      notifyPanes()
+      scheduleClear()
     }
 
     /** Subscribe to the workbench state. */
@@ -1024,8 +1039,32 @@ window.__ModuleLoader__.load({
     }
 
     /** Show the workbench, adding `sessionId` when given. */
-    function openWorkbench(ctx, sessionId) {
-      if (typeof sessionId === 'string' && sessionId !== '') setPanes(addPane(paneStore.panes, sessionId))
+    function openWorkbench(ctx, sessionId, at) {
+      if (typeof sessionId === 'string' && sessionId !== '') {
+        const existing = paneStore.panes.indexOf(sessionId)
+        if (existing >= 0) {
+          // Dragging a Session that already owns a pane moves that pane to the
+          // hovered slot instead of appending a duplicate.
+          if (typeof at === 'number' && at >= 0) {
+            // `at` is an insertion index; moving an earlier pane removes one
+            // slot, so the destination is at-1 in that case.
+            const to = existing < at ? at - 1 : at
+            const clamped = Math.max(0, Math.min(to, paneStore.panes.length - 1))
+            if (clamped !== existing) setPanes(movePane(paneStore.panes, existing, clamped))
+          }
+        } else {
+          const panes = addPane(paneStore.panes, sessionId)
+          if (typeof at === 'number' && at >= 0 && at < panes.length) {
+            // Honour the previewed slot instead of always appending.
+            const list = panes.slice()
+            const added = list.pop()
+            list.splice(at, 0, added)
+            setPanes(list)
+          } else {
+            setPanes(panes)
+          }
+        }
+      }
       const layout = typeof ctx.get === 'function' ? ctx.get('layout') : undefined
       try {
         if (layout !== undefined && layout !== null && typeof layout.selectPanel === 'function') layout.selectPanel(PANEL_ID)
@@ -1328,14 +1367,15 @@ window.__ModuleLoader__.load({
       '.ssp-empty-title{font-size:14px;color:var(--dsw-alias-label-secondary)}',
       '.ssp-empty-hint{max-width:440px;line-height:20px;font-size:12.5px}',
       '.ssp-grid{flex:1 1 auto;min-height:0;display:grid;gap:6px;background:color-mix(in srgb,var(--dsw-alias-bg-base) 70%,#000);padding:6px;position:relative}',
-      '.ssp-grid[data-dropping="panel"]{outline:2px dashed var(--dsw-alias-state-business-primary);outline-offset:-3px}',
       '.ssp-gutter{position:absolute;top:0;bottom:0;width:11px;transform:translateX(-50%);cursor:col-resize;z-index:4;touch-action:none;border-radius:2px;background:transparent}',
       '.ssp-gutter:hover{background:color-mix(in srgb,var(--dsw-alias-state-business-primary) 38%,transparent)}',
       '.ssp-gutter:active{background:color-mix(in srgb,var(--dsw-alias-state-business-primary) 60%,transparent)}',
       '.ssp-root{flex:1 1 auto;min-height:0;display:flex;flex-direction:column;background:var(--dsw-alias-bg-base)}',
       '.ssp-pane{display:flex;flex-direction:column;min-width:0;min-height:0;background:var(--dsw-alias-bg-base);overflow:hidden;position:relative;border-radius:10px;border:1px solid color-mix(in srgb,var(--dsw-alias-border-l1) 65%,transparent)}',
-      '.ssp-pane-preview{display:flex;flex-direction:row;align-items:center;justify-content:center;border:1.5px dashed var(--dsw-alias-state-business-primary);background:color-mix(in srgb,var(--dsw-alias-state-business-primary) 8%,transparent);color:var(--dsw-alias-label-secondary)}',
+      '.ssp-pane-preview{display:flex;flex-direction:row;align-items:center;justify-content:center;pointer-events:none;border:1.5px dashed var(--dsw-alias-state-business-primary);background:color-mix(in srgb,var(--dsw-alias-state-business-primary) 8%,transparent);color:var(--dsw-alias-label-secondary)}',
       '.ssp-pane-preview-label{flex:0 0 auto;text-align:center;font-size:12.5px;line-height:18px;pointer-events:none}',
+      // The inline preview slot already marks the drop position; a frame
+      // outline around the whole grid would read as a second, conflicting cue.
       '.ssp-pane[data-drop-target]::after{content:"";position:absolute;inset:0;border:2px dashed var(--dsw-alias-state-business-primary);pointer-events:none;z-index:9}',
       '.ssp-pane[data-dragging]{opacity:.62;filter:saturate(.75);transition:opacity 120ms ease}',
       '.ssp-pane[data-dragging]::after{content:"";position:absolute;inset:0;border:2px dashed var(--dsw-alias-state-business-primary);pointer-events:none;z-index:9}',
@@ -1386,9 +1426,8 @@ window.__ModuleLoader__.load({
       '.ssp-chip:hover{background:var(--dsw-alias-interactive-bg-hover);color:var(--dsw-alias-label-primary)}',
       '.ssp-chip-more{flex:0 0 auto;font-variant-numeric:tabular-nums}',
       '.ssp-chip-count{flex:0 0 auto;font-variant-numeric:tabular-nums}',
-      '.ssp-pane-flash{position:relative;z-index:2}',
-      '.ssp-pane-flash::after{content:"";position:absolute;inset:0;border:2px solid var(--dsw-alias-state-business-primary);pointer-events:none;z-index:9;animation:ssp-flash-out 1.6s ease-out forwards}',
-      '@keyframes ssp-flash-out{0%{opacity:1}70%{opacity:1}100%{opacity:0}}',
+      '.ssp-pane-flash{position:relative;z-index:2;outline:2px solid var(--dsw-alias-state-business-primary);outline-offset:-2px;animation:ssp-flash-out 1.6s ease-out forwards}',
+      '@keyframes ssp-flash-out{0%{outline-color:var(--dsw-alias-state-business-primary)}70%{outline-color:var(--dsw-alias-state-business-primary)}100%{outline-color:transparent}}',
       '.ssp-chip-dot{width:5px;height:5px;border-radius:50%;background:var(--dsw-alias-state-idle-primary);flex:0 0 auto}',
       '.ssp-chip[data-running="running"] .ssp-chip-dot{background:var(--dsw-alias-state-success-primary)}',
       '.ssp-chip-label{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
@@ -2438,7 +2477,11 @@ window.__ModuleLoader__.load({
       const [picker, setPicker] = useState(null)
       const t = useCallback((key, params) => translate(ctx, key, params), [ctx])
       const panes = state.panes
-      const grid = planGrid(panes.length + (drag.kind === 'session' && typeof drag.previewIndex === 'number' && drag.previewIndex >= 0 ? 1 : 0), state.columns)
+      const addingSessionSlot = drag.kind === 'session'
+        && typeof drag.previewIndex === 'number'
+        && drag.previewIndex >= 0
+        && !panes.includes(drag.sessionId)
+      const grid = planGrid(panes.length + (addingSessionSlot ? 1 : 0), state.columns)
       // Published by the `main` seat (see KitSeat) — the overlay has no
       // selector hooks of its own.
       const workspaceState = props !== undefined && props !== null ? props.workspaceState : undefined
@@ -2636,7 +2679,12 @@ window.__ModuleLoader__.load({
           }, [
             ...panes.flatMap((sessionId, index) => {
               const items = []
-              if (drag.kind === 'session' && drag.previewIndex === index) {
+              // A Session that already owns a pane only reorders; the add-slot
+              // preview would wrongly suggest a third pane.
+              const showingNewSlot = drag.kind === 'session'
+                && drag.previewIndex === index
+                && !panes.includes(drag.sessionId)
+              if (showingNewSlot) {
                 items.push(h('div', {
                   key: 'ssp-drop-preview',
                   className: 'ssp-pane ssp-pane-preview',
@@ -2656,11 +2704,13 @@ window.__ModuleLoader__.load({
                 flash: state.flash === sessionId,
                 compact: state.compactComposer,
                 unread: unreadIds.has(sessionId),
-                dragging: drag.kind === 'pane' && drag.sessionId === sessionId,
+                // A Session drag that reorders an open pane should read like a
+                // pane drag: the dragged card gets the dashed outline.
+                dragging: drag.sessionId === sessionId && (drag.kind === 'pane' || drag.kind === 'session'),
               }))
               return items
             }),
-            drag.kind === 'session' && drag.previewIndex === panes.length
+            drag.kind === 'session' && drag.previewIndex === panes.length && !panes.includes(drag.sessionId)
               ? h('div', { key: 'ssp-drop-preview', className: 'ssp-pane ssp-pane-preview', 'data-ssp-preview': '' },
                 h('span', { className: 'ssp-pane-preview-label' }, t('panel.dropPreview')))
               : null,
@@ -2900,6 +2950,20 @@ window.__ModuleLoader__.load({
               }
             }
             setDrag({ kind: 'session', sessionId: draggedSession, zone: 'panel', previewIndex: Math.max(0, Math.min(insertAt, paneStore.panes.length)) })
+            // A Session that already owns a pane reorders: preview the landing
+            // spot live, the same way dragging a pane header does.
+            const movingFrom = paneStore.panes.indexOf(draggedSession)
+            if (movingFrom >= 0) {
+              const hit = rects.find((rect) => event.clientX >= rect.left && event.clientX <= rect.right
+                && event.clientY >= rect.top && event.clientY <= rect.bottom)
+              const overId = hit !== undefined && hit !== null ? paneStore.panes[hit.index] : null
+              const to = overId !== null ? paneStore.panes.indexOf(overId) : -1
+              const next = to < 0 || to === movingFrom ? paneStore.panes.slice() : movePane(paneStore.panes, movingFrom, to)
+              if (previewOrder === null || previewOrder.join('|') !== next.join('|')) {
+                previewOrder = next
+                paintPaneOrder(next)
+              }
+            }
             event.preventDefault()
             try {
               if (event.dataTransfer !== null && event.dataTransfer !== undefined) event.dataTransfer.dropEffect = 'move'
@@ -2948,6 +3012,7 @@ window.__ModuleLoader__.load({
           if (draggedSession !== null) {
             const sessionId = draggedSession
             draggedSession = null
+            const previewedAt = dragStore.previewIndex
             setDrag({ kind: null, sessionId: null, overPane: null, zone: null, previewIndex: null })
             dragStore.paneRects = null
             if (!insideWorkbench(event)) return
@@ -2959,7 +3024,15 @@ window.__ModuleLoader__.load({
             event.preventDefault()
             if (typeof event.stopPropagation === 'function') event.stopPropagation()
             if (typeof event.stopImmediatePropagation === 'function') event.stopImmediatePropagation()
-            openWorkbench(ctx, sessionId)
+            if (previewOrder !== null) {
+              // Commit the live preview (reorder of an already-open Session).
+              const landed = previewOrder
+              previewOrder = null
+              clearPaneOrder()
+              setPanes(landed)
+              return
+            }
+            openWorkbench(ctx, sessionId, typeof previewedAt === 'number' ? previewedAt : undefined)
             return
           }
           if (draggedIndex >= 0) {
