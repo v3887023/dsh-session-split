@@ -166,3 +166,22 @@ node test/transcript.test.mjs
 node test/registration.test.mjs
 node test/render.test.mjs
 ```
+
+## Install
+
+Install straight from GitHub into your DSH profile:
+
+``bash
+# latest from main
+dsh plugin --profile <profile> add git+https://github.com/v3887023/dsh-session-split.git
+
+# pinned to a release tag
+dsh plugin --profile <profile> add git+https://github.com/v3887023/dsh-session-split.git#v1.2.3
+``
+
+Then open **会话分屏** in the sidebar. To update, run the same command again with a
+newer tag; to uninstall:
+
+``bash
+dsh plugin --profile <profile> remove @v3887023/dsh-session-split
+``
