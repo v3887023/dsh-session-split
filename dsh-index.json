@@ -28,7 +28,8 @@
             "type": "git",
             "url": "https://github.com/v3887023/dsh-session-split",
             "commit": "4d1719f18135932a5627e58745bbddb2c7c2064c"
-          }
+          },
+          "publishTimestamp": 1795533771
         },
         {
           "version": "1.2.4",
@@ -36,7 +37,8 @@
             "type": "git",
             "url": "https://github.com/v3887023/dsh-session-split",
             "commit": "6c796e56b66092609efa0a9dc739857a5a3e20ec"
-          }
+          },
+          "publishTimestamp": 1795521320
         }
       ]
     }
