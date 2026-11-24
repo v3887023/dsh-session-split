@@ -1,12 +1,12 @@
 {
   "format": 1,
   "title": {
-    "en": "Session Split",
-    "zh": "会话分屏"
+    "en": "v3887023's DSH plugins",
+    "zh": "v3887023 的 DSH 插件"
   },
   "description": {
-    "en": "Private DSH plugin index",
-    "zh": "私有 DSH 插件索引"
+    "en": "DSH plugins published by v3887023.",
+    "zh": "v3887023 发布的 DSH 插件集合。"
   },
   "plugins": [
     {
